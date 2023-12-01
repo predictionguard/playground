@@ -27,9 +27,8 @@ st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 model_dict = {
     "Nous-Hermes-Llama2-13B (Text Generation)": "Nous-Hermes-Llama2-13B", 
     "Neural-Chat-7B (Chat)": "Neural-Chat-7B", 
-    "WizardCoder-15B (Code Generation)": "WizardCoder", 
+    "WizardCoder-15B (Code Gen, Tech Assistant)": "WizardCoder", 
     "Yi-34B (Text Generation)": "Yi-34B",
-    "Zephyr-7B-Beta (Chat)": "Zephyr-7B"
     }
 
 def check_password():
@@ -122,14 +121,8 @@ if __name__ == "__main__":
         
         with completions_tab:
             prompt = st.text_area("Enter an LLM prompt", height=200, key="prompt")
-            with st.expander("Model Control and configuration"):
-                model = st.selectbox("Model", [
-                    "Neural-Chat-7B (Chat)",
-                    "Nous-Hermes-Llama2-13B (Text Generation)", 
-                    "WizardCoder-15B (Code Generation)", 
-                    "Yi-34B (Text Generation)",
-                    "Zephy-7B-Beta (Chat)"
-                    ])
+            with st.expander("Model validation and configuration"):
+                model = st.selectbox("Model", model_dict.keys())
                 consistency = st.checkbox("Consistency", key="consistency", value=False)
                 factuality = st.checkbox("Factuality", key="factuality_comp", value=False)
                 toxicity = st.checkbox("Toxicity", key="toxicity_comp", value=False)
@@ -162,8 +155,8 @@ if __name__ == "__main__":
                         st.success(result['choices'][0]['text'])
         
         with factuality_tab:
-            text = st.text_area("Enter Text to Check for Factuality", height=100, key="fact_text")
-            ref = st.text_area("Enter a Reference to Check the Text Against", height=100, key="fact_ref")
+            text = st.text_area("Draft text (to check against a reference)", height=100, key="fact_text")
+            ref = st.text_area("Reference text (to validate the draft)", height=100, key="fact_ref")
 
             if st.button("Generate", key="fact_button"):
                 with st.spinner("Generating..."):
@@ -178,7 +171,7 @@ if __name__ == "__main__":
                         st.progress(result['checks'][0]['score'])
 
         with toxicity_tab:
-            text = st.text_area("Enter Text to Check for Toxicity", height=200, key="tox_text")
+            text = st.text_area("Text to check for toxicity", height=200, key="tox_text")
 
             if st.button("Generate", key="tox_button"):
                 with st.spinner("Generating..."):
@@ -188,7 +181,7 @@ if __name__ == "__main__":
                     if 'error' in result['checks'][0]['status']:
                         st.warning(result['checks'][0]['status'])
                     else:
-                        st.success("Score: " + str(result['checks'][0]['score']))
+                        st.success("Score: " + str(round(result['checks'][0]['score']), 2))
                         st.progress(result['checks'][0]['score'])
 
         footer()
