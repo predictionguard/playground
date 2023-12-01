@@ -21,6 +21,13 @@ footer {visibility: hidden;}
 """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
+model_dict = {
+    "Nous-Hermes-Llama2-13B (Text Generation)": "Nous-Hermes-Llama-13B", 
+    "Neural-Chat-7B (Chat)": "Neural-Chat-7B", 
+    "WizardCoder-15B (Code Generation)": "WizardCoder", 
+    "Yi-34B (Text Generation)": "Yi-34B",
+    "Zephyr-7B-Beta (Chat)": "Zephyr-7B"
+    }
 
 def check_password():
     """Returns `True` if the user had the correct password."""
@@ -113,7 +120,13 @@ if __name__ == "__main__":
         with completions_tab:
             prompt = st.text_area("Enter an LLM prompt", height=200, key="prompt")
             with st.expander("Model Control and configuration"):
-                model = st.selectbox("Model", [x for x in sorted(pg.Completion.list_models()) if "OpenAI" not in x])
+                model = st.selectbox("Model", [
+                    "Nous-Hermes-Llama2-13B (Text Generation)", 
+                    "Neural-Chat-7B (Chat)", 
+                    "WizardCoder-15B (Code Generation)", 
+                    "Yi-34B (Text Generation)",
+                    "Zephy-7B-Beta (Chat)"
+                    ])
                 consistency = st.checkbox("Consistency", key="consistency", value=False)
                 factuality = st.checkbox("Factuality", key="factuality_comp", value=False)
                 toxicity = st.checkbox("Toxicity", key="toxicity_comp", value=False)
@@ -133,7 +146,7 @@ if __name__ == "__main__":
                 with st.spinner("Generating..."):
                     print(output)
                     result = pg.Completion.create(
-                        model=model,
+                        model=model_dict[model],
                         prompt=prompt,
                         output=output,
                         max_tokens=max_tokens,
