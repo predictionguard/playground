@@ -22,7 +22,7 @@ footer {visibility: hidden;}
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
 model_dict = {
-    "Nous-Hermes-Llama2-13B (Text Generation)": "Nous-Hermes-Llama-13B", 
+    "Nous-Hermes-Llama2-13B (Text Generation)": "Nous-Hermes-13B", 
     "Neural-Chat-7B (Chat)": "Neural-Chat-7B", 
     "WizardCoder-15B (Code Generation)": "WizardCoder", 
     "Yi-34B (Text Generation)": "Yi-34B",
@@ -121,8 +121,8 @@ if __name__ == "__main__":
             prompt = st.text_area("Enter an LLM prompt", height=200, key="prompt")
             with st.expander("Model Control and configuration"):
                 model = st.selectbox("Model", [
+                    "Neural-Chat-7B (Chat)",
                     "Nous-Hermes-Llama2-13B (Text Generation)", 
-                    "Neural-Chat-7B (Chat)", 
                     "WizardCoder-15B (Code Generation)", 
                     "Yi-34B (Text Generation)",
                     "Zephy-7B-Beta (Chat)"
