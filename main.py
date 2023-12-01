@@ -4,6 +4,9 @@ import os
 from htbuilder import HtmlElement, div, br, hr, a, p, img, styles
 from htbuilder.units import percent, px
 import streamlit as st
+
+os.environ["PREDICTIONGUARD_URL"] = "https://staging.predictionguard.com"
+
 import predictionguard as pg
 
 #---------------------#
