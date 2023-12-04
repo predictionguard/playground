@@ -26,7 +26,8 @@ st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
 model_dict = {
     "Nous-Hermes-Llama2-13B (Text Generation)": "Nous-Hermes-Llama2-13B", 
-    "Neural-Chat-7B (Chat)": "Neural-Chat-7B", 
+    "Neural-Chat-7B (Chat)": "Neural-Chat-7B",
+    "Notus-7B (Chat)": "Notus-7B",
     "WizardCoder-15B (Code Gen, Tech Assistant)": "WizardCoder", 
     "Yi-34B (Text Generation)": "Yi-34B",
     }
