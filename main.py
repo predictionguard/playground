@@ -138,22 +138,25 @@ if __name__ == "__main__":
                 temperature = st.slider("Temperature", 0.0, 1.0, 0.75)
                 top_p = st.slider("Top-p", 0.0, 1.0, 0.9)
                 max_tokens = st.slider("Max Tokens", 0, 1024, 100)
-
-            if st.button("Generate", key="comp_spinner"):
-                with st.spinner("Generating..."):
-                    print(output)
-                    result = pg.Completion.create(
-                        model=model_dict[model],
-                        prompt=prompt,
-                        output=output,
-                        max_tokens=max_tokens,
-                        temperature=temperature,
-                        top_p=top_p,
-                    )
-                    if 'error' in result['choices'][0]['status']:
-                        st.warning(result['choices'][0]['status'])
-                    else:
-                        st.success(result['choices'][0]['text'])
+            print(prompt.split(" "))
+            if len(prompt.split(" ")) > 1500:
+                st.warning("Max prompt length exceeded for playground environment. Please try a shorter prompt.")
+            else:
+                if st.button("Generate", key="comp_spinner"):
+                    with st.spinner("Generating..."):
+                        print(output)
+                        result = pg.Completion.create(
+                            model=model_dict[model],
+                            prompt=prompt,
+                            output=output,
+                            max_tokens=max_tokens,
+                            temperature=temperature,
+                            top_p=top_p,
+                        )
+                        if 'error' in result['choices'][0]['status']:
+                            st.warning(result['choices'][0]['status'])
+                        else:
+                            st.success(result['choices'][0]['text'])
         
         with factuality_tab:
             text = st.text_area("Draft text (to check against a reference)", height=100, key="fact_text")
