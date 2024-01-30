@@ -220,7 +220,7 @@ if __name__ == "__main__":
                     if 'error' in result['checks'][0]['status']:
                         st.warning(result['checks'][0]['status'])
                     else:
-                        st.success("Score: " + str(round(result['checks'][0]['score']), 2))
+                        st.success("Score: " + str(round(result['checks'][0]['score'], 4)))
                         st.progress(result['checks'][0]['score'])
 
         footer()
