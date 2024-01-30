@@ -5,7 +5,7 @@ from htbuilder import HtmlElement, div, br, hr, a, p, img, styles
 from htbuilder.units import percent, px
 import streamlit as st
 
-os.environ["PREDICTIONGUARD_URL"] = "https://staging.predictionguard.com"
+#os.environ["PREDICTIONGUARD_URL"] = "https://staging.predictionguard.com"
 
 import predictionguard as pg
 
@@ -26,10 +26,10 @@ st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
 model_dict = {
     "Nous-Hermes-Llama2-13B (Text Generation)": "Nous-Hermes-Llama2-13B", 
+    "Nous-Hermes-2-SOLAR-10.7B (Text Generation)": "Nous-Hermes-2-SOLAR-10.7B", 
     "Neural-Chat-7B (Chat)": "Neural-Chat-7B",
-    "Notus-7B (Chat)": "Notus-7B",
-    "WizardCoder-15B (Code Gen, Tech Assistant)": "WizardCoder", 
-    "Yi-34B (Text Generation)": "Yi-34B",
+    "deepseek-coder-6.7b-instruct (Code/SQL Generation, Tech Assistant)": "deepseek-coder-6.7b-instruct",
+    "Yi-34B-Chat (English + Mandarin Chat)": "Yi-34B-Chat",
     }
 
 def check_password():
@@ -106,8 +106,6 @@ def layout(*args):
 def footer():
     myargs = [
         "<b>Made with</b>: Prediction Guard ",
-        link("https://www.predictionguard.com/", image('https://www.sweasy26.com/emoji-dictionary/images/white-chess-rook.png',
-        	width=px(18), height=px(18), margin= "0em")),
         br(),
         "(a member of Intel LiftOff)",
         br(),
@@ -123,40 +121,77 @@ if __name__ == "__main__":
         with completions_tab:
             prompt = st.text_area("Enter an LLM prompt", height=200, key="prompt")
             with st.expander("Model validation and configuration"):
+                st.markdown("#### Model:")
                 model = st.selectbox("Model", model_dict.keys())
+                st.markdown("#### Input Filters:")
+                pii = st.checkbox("PII", key="pii", value=False)
+                prompt_injection = st.checkbox("Prompt Injection", key="prompt_injection", value=False)
+                st.markdown("#### Output Checks:")
                 consistency = st.checkbox("Consistency", key="consistency", value=False)
-                factuality = st.checkbox("Factuality", key="factuality_comp", value=False)
+                #factuality = st.checkbox("Factuality", key="factuality_comp", value=False)
                 toxicity = st.checkbox("Toxicity", key="toxicity_comp", value=False)
 
                 # parse output_types into json dict
                 output = {}
                 output["consistency"] = consistency
-                output["factuality"] = factuality
+                #output["factuality"] = factuality
                 output["toxicity"] = toxicity
 
             with st.expander("Text Completion Parameters"):
                 temperature = st.slider("Temperature", 0.0, 1.0, 0.75)
-                top_p = st.slider("Top-p", 0.0, 1.0, 0.9)
+                #top_p = st.slider("Top-p", 0.0, 1.0, 0.9)
                 max_tokens = st.slider("Max Tokens", 0, 1024, 100)
-            print(prompt.split(" "))
             if len(prompt.split(" ")) > 1500:
                 st.warning("Max prompt length exceeded for playground environment. Please try a shorter prompt.")
             else:
                 if st.button("Generate", key="comp_spinner"):
                     with st.spinner("Generating..."):
-                        print(output)
-                        result = pg.Completion.create(
-                            model=model_dict[model],
-                            prompt=prompt,
-                            output=output,
-                            max_tokens=max_tokens,
-                            temperature=temperature,
-                            top_p=top_p,
-                        )
-                        if 'error' in result['choices'][0]['status']:
-                            st.warning(result['choices'][0]['status'])
+
+                        completion = ""
+
+                        # Check for PII
+                        if pii:
+                            with st.spinner("Checking for PII..."):
+                                pii_response = pg.PII.check(
+                                    prompt=prompt,
+                                    replace=False,
+                                    replace_method="fake"
+                                )
+                                if "[" in pii_response['checks'][0]['pii_types_and_positions']:
+                                    pii_result = True
+                                    st.warning("Warning! PII detected. Please avoid using personal information.")
+                                else:
+                                    pii_result = False
                         else:
-                            st.success(result['choices'][0]['text'])
+                            pii_result = False
+
+                        # Check for injection
+                        if prompt_injection:
+                            with st.spinner("Checking for security vulnerabilities..."):
+                                injection_response = pg.Injection.check(
+                                    prompt=prompt,
+                                    detect=True
+                                )
+                                if injection_response['checks'][0]['probability'] > 0.5:
+                                    injection_result = True
+                                    st.warning("Warning! Security vulnerabilities detected. Please avoid using malicious prompts.")
+                                else:
+                                    injection_result = False
+                        else:
+                            injection_result = False
+
+                        if not pii_result and not injection_result:
+                            result = pg.Completion.create(
+                                model=model_dict[model],
+                                prompt=prompt,
+                                output=output,
+                                max_tokens=max_tokens,
+                                temperature=temperature
+                            )
+                            if 'error' in result['choices'][0]['status']:
+                                st.warning(result['choices'][0]['status'])
+                            else:
+                                st.success(result['choices'][0]['text'])
         
         with factuality_tab:
             text = st.text_area("Draft text (to check against a reference)", height=100, key="fact_text")
